@@ -1,0 +1,12 @@
+{
+  "area": "Dadu",
+  "people": 240,
+  "peopleIsEstimate": true,
+  "urgency": "high",
+  "vulnerable": ["children", "elderly"],
+  "supplies": [{ "item": "water", "qty": 0 }, { "item": "medicine", "qty": 0 }],
+  "access": "hard",
+  "detectedLanguage": "ur",
+  "englishText": "About forty houses near Dadu are under water. Children and elders are stranded. We need drinking water and medicine. The roads are closed.",
+  "confidence": { "area": 0.95, "people": 0.6, "urgency": 0.7, "vulnerable": 0.9, "supplies": 0.5, "access": 0.85 }
+}

@@ -1,0 +1,5 @@
+{
+  "inScope": true,
+  "answer": "Badin needed 500 units of water and received 320. Available stock was limited, so it was shared according to priority score and remaining need.",
+  "sources": [{ "type": "allocation", "id": "alc_123" }]
+}

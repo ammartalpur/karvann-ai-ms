@@ -1,0 +1,1267 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Karwan AI Service",
+    "description": "Understands Karwan reports and explains Karwan data. It never saves requests, calculates scores, allocates supplies or changes stock - the Express backend does that.",
+    "version": "2.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/intake": {
+      "post": {
+        "summary": "Analyse a text or voice report (does not save anything)",
+        "operationId": "intake_intake_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_intake_intake_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IntakeResult"
+                },
+                "example": {
+                  "area": "Dadu",
+                  "people": 240,
+                  "peopleIsEstimate": true,
+                  "urgency": "high",
+                  "vulnerable": [
+                    "children",
+                    "medical"
+                  ],
+                  "supplies": [
+                    {
+                      "item": "water",
+                      "qty": 500
+                    }
+                  ],
+                  "access": "hard",
+                  "detectedLanguage": "ur",
+                  "englishText": "About forty houses near Dadu are flooded.",
+                  "confidence": {
+                    "area": 0.95,
+                    "people": 0.65,
+                    "urgency": 0.8,
+                    "vulnerable": 0.9,
+                    "supplies": 0.4,
+                    "access": 0.3
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are missing or invalid. Please check your input.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "AUDIO_TOO_LARGE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AUDIO_TOO_LARGE": {
+                    "value": {
+                      "error": {
+                        "code": "AUDIO_TOO_LARGE",
+                        "message": "The recording is too large. Keep it under 30 seconds or type your report.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "UNSUPPORTED_AUDIO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "UNSUPPORTED_AUDIO": {
+                    "value": {
+                      "error": {
+                        "code": "UNSUPPORTED_AUDIO",
+                        "message": "That audio format is not supported. Type your report instead.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "AI_QUOTA_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_QUOTA_EXCEEDED": {
+                    "value": {
+                      "error": {
+                        "code": "AI_QUOTA_EXCEEDED",
+                        "message": "The AI assistant has reached its limit for now. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI_INVALID_OUTPUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_INVALID_OUTPUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_INVALID_OUTPUT",
+                        "message": "The AI could not understand that report. Please edit it or use the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_UNAVAILABLE": {
+                    "value": {
+                      "error": {
+                        "code": "AI_UNAVAILABLE",
+                        "message": "The AI assistant is unavailable. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "AI_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_TIMEOUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_TIMEOUT",
+                        "message": "The AI assistant is busy. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transcribe": {
+      "post": {
+        "summary": "Short audio to text and detected language",
+        "operationId": "transcribe_audio_transcribe_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_transcribe_audio_transcribe_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TranscribeResult"
+                },
+                "example": {
+                  "text": "Dadu needs water and medicine.",
+                  "detectedLanguage": "ur"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are missing or invalid. Please check your input.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "AUDIO_TOO_LARGE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AUDIO_TOO_LARGE": {
+                    "value": {
+                      "error": {
+                        "code": "AUDIO_TOO_LARGE",
+                        "message": "The recording is too large. Keep it under 30 seconds or type your report.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "UNSUPPORTED_AUDIO",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "UNSUPPORTED_AUDIO": {
+                    "value": {
+                      "error": {
+                        "code": "UNSUPPORTED_AUDIO",
+                        "message": "That audio format is not supported. Type your report instead.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "AI_QUOTA_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_QUOTA_EXCEEDED": {
+                    "value": {
+                      "error": {
+                        "code": "AI_QUOTA_EXCEEDED",
+                        "message": "The AI assistant has reached its limit for now. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI_INVALID_OUTPUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_INVALID_OUTPUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_INVALID_OUTPUT",
+                        "message": "The AI could not understand that report. Please edit it or use the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_UNAVAILABLE": {
+                    "value": {
+                      "error": {
+                        "code": "AI_UNAVAILABLE",
+                        "message": "The AI assistant is unavailable. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "AI_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_TIMEOUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_TIMEOUT",
+                        "message": "The AI assistant is busy. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chat": {
+      "post": {
+        "summary": "Explain live Karwan data (read-only; fixed refusal when off-topic)",
+        "operationId": "chat_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "In-scope answer, or the fixed refusal with inScope=false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChatResponse"
+                },
+                "examples": {
+                  "inScope": {
+                    "value": {
+                      "inScope": true,
+                      "answer": "Badin needed 500 units of water and received 320. Available stock was limited, so it was shared according to priority score and remaining need.",
+                      "sources": [
+                        {
+                          "type": "allocation",
+                          "id": "alc_123"
+                        }
+                      ]
+                    }
+                  },
+                  "refusal": {
+                    "value": {
+                      "inScope": false,
+                      "answer": "I can only answer questions about Karwan's requests, stock, allocations, and deliveries.",
+                      "sources": []
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are missing or invalid. Please check your input.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "AI_QUOTA_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_QUOTA_EXCEEDED": {
+                    "value": {
+                      "error": {
+                        "code": "AI_QUOTA_EXCEEDED",
+                        "message": "The AI assistant has reached its limit for now. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI_INVALID_OUTPUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_INVALID_OUTPUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_INVALID_OUTPUT",
+                        "message": "The AI could not understand that report. Please edit it or use the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_UNAVAILABLE, KARWAN_API_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_UNAVAILABLE": {
+                    "value": {
+                      "error": {
+                        "code": "AI_UNAVAILABLE",
+                        "message": "The AI assistant is unavailable. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  },
+                  "KARWAN_API_UNAVAILABLE": {
+                    "value": {
+                      "error": {
+                        "code": "KARWAN_API_UNAVAILABLE",
+                        "message": "Karwan data is unavailable right now. Please try again shortly.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "AI_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_TIMEOUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_TIMEOUT",
+                        "message": "The AI assistant is busy. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/site-chat": {
+      "post": {
+        "summary": "Public help bot: how to use the Karwan website (no live data)",
+        "operationId": "site_chat_site_chat_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Answer, or the fixed refusal with inScope=false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteChatResponse"
+                },
+                "examples": {
+                  "inScope": {
+                    "value": {
+                      "inScope": true,
+                      "answer": "Open New request, describe the situation, check the form, drop a pin on the map and press Confirm request."
+                    }
+                  },
+                  "refusal": {
+                    "value": {
+                      "inScope": false,
+                      "answer": "I can only answer questions about how to use the Karwan website."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "VALIDATION_ERROR": {
+                    "value": {
+                      "error": {
+                        "code": "VALIDATION_ERROR",
+                        "message": "Some fields are missing or invalid. Please check your input.",
+                        "retryable": false
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "AI_QUOTA_EXCEEDED",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_QUOTA_EXCEEDED": {
+                    "value": {
+                      "error": {
+                        "code": "AI_QUOTA_EXCEEDED",
+                        "message": "The AI assistant has reached its limit for now. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "AI_INVALID_OUTPUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_INVALID_OUTPUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_INVALID_OUTPUT",
+                        "message": "The AI could not understand that report. Please edit it or use the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "AI_UNAVAILABLE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_UNAVAILABLE": {
+                    "value": {
+                      "error": {
+                        "code": "AI_UNAVAILABLE",
+                        "message": "The AI assistant is unavailable. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "504": {
+            "description": "AI_TIMEOUT",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "examples": {
+                  "AI_TIMEOUT": {
+                    "value": {
+                      "error": {
+                        "code": "AI_TIMEOUT",
+                        "message": "The AI assistant is busy. You can continue with the manual form.",
+                        "retryable": true
+                      },
+                      "requestId": "req_trace_123"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Body_intake_intake_post": {
+        "properties": {
+          "ui_language": {
+            "type": "string",
+            "enum": [
+              "en",
+              "ur"
+            ],
+            "title": "Ui Language"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "audio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ui_language"
+        ],
+        "title": "Body_intake_intake_post"
+      },
+      "Body_transcribe_audio_transcribe_post": {
+        "properties": {
+          "audio": {
+            "anyOf": [
+              {
+                "type": "string",
+                "contentMediaType": "application/octet-stream"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Audio"
+          },
+          "target_language": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "en",
+                  "ur"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Language"
+          }
+        },
+        "type": "object",
+        "title": "Body_transcribe_audio_transcribe_post"
+      },
+      "ChatRequest": {
+        "properties": {
+          "question": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Question"
+          },
+          "uiLanguage": {
+            "type": "string",
+            "enum": [
+              "en",
+              "ur"
+            ],
+            "title": "Uilanguage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "question",
+          "uiLanguage"
+        ],
+        "title": "ChatRequest"
+      },
+      "ChatResponse": {
+        "properties": {
+          "inScope": {
+            "type": "boolean",
+            "title": "Inscope"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "type": "array",
+            "title": "Sources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inScope",
+          "answer",
+          "sources"
+        ],
+        "title": "ChatResponse"
+      },
+      "Confidence": {
+        "properties": {
+          "area": {
+            "type": "number",
+            "title": "Area"
+          },
+          "people": {
+            "type": "number",
+            "title": "People"
+          },
+          "urgency": {
+            "type": "number",
+            "title": "Urgency"
+          },
+          "vulnerable": {
+            "type": "number",
+            "title": "Vulnerable"
+          },
+          "supplies": {
+            "type": "number",
+            "title": "Supplies"
+          },
+          "access": {
+            "type": "number",
+            "title": "Access"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area",
+          "people",
+          "urgency",
+          "vulnerable",
+          "supplies",
+          "access"
+        ],
+        "title": "Confidence"
+      },
+      "ErrorBody": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "retryable": {
+            "type": "boolean",
+            "title": "Retryable"
+          },
+          "details": {
+            "anyOf": [
+              {},
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "message",
+          "retryable"
+        ],
+        "title": "ErrorBody"
+      },
+      "ErrorEnvelope": {
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          },
+          "requestId": {
+            "type": "string",
+            "title": "Requestid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "error",
+          "requestId"
+        ],
+        "title": "ErrorEnvelope"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HealthResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "ok",
+            "title": "Status",
+            "default": "ok"
+          },
+          "service": {
+            "type": "string",
+            "title": "Service",
+            "default": "karwan-ai"
+          }
+        },
+        "type": "object",
+        "title": "HealthResponse"
+      },
+      "IntakeResult": {
+        "properties": {
+          "area": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Area"
+          },
+          "people": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "People"
+          },
+          "peopleIsEstimate": {
+            "type": "boolean",
+            "title": "Peopleisestimate"
+          },
+          "urgency": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "low",
+                  "medium",
+                  "high",
+                  "critical"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Urgency"
+          },
+          "vulnerable": {
+            "items": {
+              "type": "string",
+              "enum": [
+                "children",
+                "elderly",
+                "medical"
+              ]
+            },
+            "type": "array",
+            "title": "Vulnerable"
+          },
+          "supplies": {
+            "items": {
+              "$ref": "#/components/schemas/Supply"
+            },
+            "type": "array",
+            "title": "Supplies"
+          },
+          "access": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "easy",
+                  "medium",
+                  "hard"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Access"
+          },
+          "detectedLanguage": {
+            "type": "string",
+            "enum": [
+              "en",
+              "ur"
+            ],
+            "title": "Detectedlanguage"
+          },
+          "englishText": {
+            "type": "string",
+            "title": "Englishtext"
+          },
+          "confidence": {
+            "$ref": "#/components/schemas/Confidence"
+          }
+        },
+        "type": "object",
+        "required": [
+          "area",
+          "people",
+          "peopleIsEstimate",
+          "urgency",
+          "vulnerable",
+          "supplies",
+          "access",
+          "detectedLanguage",
+          "englishText",
+          "confidence"
+        ],
+        "title": "IntakeResult",
+        "description": "Also used as Gemini's response schema, so it has no defaults on purpose."
+      },
+      "SiteChatResponse": {
+        "properties": {
+          "inScope": {
+            "type": "boolean",
+            "title": "Inscope"
+          },
+          "answer": {
+            "type": "string",
+            "title": "Answer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inScope",
+          "answer"
+        ],
+        "title": "SiteChatResponse"
+      },
+      "SourceRef": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "request",
+              "allocation",
+              "depot",
+              "delivery"
+            ],
+            "title": "Type"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "id"
+        ],
+        "title": "SourceRef"
+      },
+      "Supply": {
+        "properties": {
+          "item": {
+            "type": "string",
+            "enum": [
+              "food",
+              "water",
+              "medicine",
+              "shelter"
+            ],
+            "title": "Item"
+          },
+          "qty": {
+            "type": "integer",
+            "title": "Qty"
+          }
+        },
+        "type": "object",
+        "required": [
+          "item",
+          "qty"
+        ],
+        "title": "Supply"
+      },
+      "TranscribeResult": {
+        "properties": {
+          "text": {
+            "type": "string",
+            "title": "Text"
+          },
+          "detectedLanguage": {
+            "type": "string",
+            "enum": [
+              "en",
+              "ur"
+            ],
+            "title": "Detectedlanguage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "text",
+          "detectedLanguage"
+        ],
+        "title": "TranscribeResult"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

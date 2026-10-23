@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "AI_QUOTA_EXCEEDED",
+    "message": "The AI assistant has reached its limit for now. You can continue with the manual form.",
+    "retryable": true,
+    "details": null
+  },
+  "requestId": "req_trace_123"
+}

@@ -1,0 +1,9 @@
+{
+  "error": {
+    "code": "KARWAN_API_UNAVAILABLE",
+    "message": "Karwan data is unavailable right now. Please try again shortly.",
+    "retryable": true,
+    "details": null
+  },
+  "requestId": "req_trace_123"
+}
